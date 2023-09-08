@@ -22,4 +22,8 @@ public class Station {
   public int getB() {
     return b;
   }
+
+  public void display() {
+    System.out.println("(" + r + ", " + g + ", " + b + ")");
+  }
 }
