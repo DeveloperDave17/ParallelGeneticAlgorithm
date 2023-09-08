@@ -38,6 +38,10 @@ public class Factory {
     return factoryLayout[0].length;
   }
 
+  public void createGap(int i, int j) {
+    factoryLayout[i][j] = null;
+  }
+
   // Only called on Members of the gene pool or already mutated children
   public double getAffinity() {
     if (affinity == 0) {
@@ -51,9 +55,11 @@ public class Factory {
     for (int currentRow = 0; currentRow < factoryLayout.length; currentRow++) {
       for (int currentCol = 0; currentCol < factoryLayout[0].length; currentCol++) {
         Station currentStation = factoryLayout[currentRow][currentCol];
-        for (int targetRow = 0; targetRow < factoryLayout.length; targetRow++) {
-          for (int targetCol = 0; targetCol < factoryLayout.length; targetCol++) {
-            if (currentRow != targetRow || currentCol != targetCol) affinity += calcAffinity(currentStation, factoryLayout[targetRow][targetCol], currentRow, currentCol, targetRow, targetCol);
+        if (currentStation != null) {
+          for (int targetRow = 0; targetRow < factoryLayout.length; targetRow++) {
+            for (int targetCol = 0; targetCol < factoryLayout.length; targetCol++) {
+              if ((currentRow != targetRow || currentCol != targetCol) && factoryLayout[targetRow][targetCol] != null) affinity += calcAffinity(currentStation, factoryLayout[targetRow][targetCol], currentRow, currentCol, targetRow, targetCol);
+            }
           }
         }
       }
