@@ -84,4 +84,12 @@ public class Factory {
     }
   }
 
+  public void display() {
+    for (int i = 0; i < factoryLayout.length; i++) {
+      for (int j = 0; j < factoryLayout[0].length; j++) {
+        factoryLayout[i][j].display();
+      }
+      System.out.println();
+    }
+  }
 }
