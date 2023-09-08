@@ -75,9 +75,10 @@ public class FactoryPopulation {
 
   private void generateStations() {
     Random rand = new Random();
+    int RBGUpperLim = 256;
     stations = new Station[NUM_STATIONS];
     for (int i = 0; i < NUM_STATIONS; i++) {
-      stations[i] = new Station(rand.nextInt(), rand.nextInt(), rand.nextInt());
+      stations[i] = new Station(rand.nextInt(RBGUpperLim), rand.nextInt(RBGUpperLim), rand.nextInt(RBGUpperLim));
     }
   }
 
