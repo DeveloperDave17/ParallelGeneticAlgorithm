@@ -70,6 +70,7 @@ public class FactoryPopulation {
       System.out.println(affinityList.get(i));
       if (affinityList.get(i) > highestAffinity) highestAffinity = affinityList.get(i);
     }
+    factoryMap.get(highestAffinity).display();
   }
 
   private void generateStations() {

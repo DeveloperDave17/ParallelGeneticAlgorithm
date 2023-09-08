@@ -24,6 +24,6 @@ public class Station {
   }
 
   public void display() {
-    System.out.println("(" + r + ", " + g + ", " + b + ")");
+    System.out.print("(" + r + ", " + g + ", " + b + ") ");
   }
 }
