@@ -25,7 +25,8 @@ public class FactoryPopulation {
   private final int COLSIZE;
 
   private final int GENERATION_TARGET_AMOUNT;
-  private int generationCount;
+
+  List<Double> affinityPool;
   
   // These values will directly affect the speed and quality of reproduction
   private final double MUTATION_RATE;
@@ -44,7 +45,6 @@ public class FactoryPopulation {
     this.ROWSIZE = rowSize;
     this.COLSIZE = colSize;
     this.GENERATION_TARGET_AMOUNT = generationTargetAmount;
-    this.generationCount = 0;
     this.MUTATION_RATE = mutationRate;
     this.POP_MAX = popMax;
     this.STARTING_POP = startingPop;
@@ -55,7 +55,6 @@ public class FactoryPopulation {
     this.ROWSIZE = ROW_SIZE_DEFAULT;
     this.COLSIZE = COL_SIZE_DEFAULT;
     this.GENERATION_TARGET_AMOUNT = GENERATION_TARGET_AMOUNT_DEFAULT;
-    this.generationCount = 0;
     this.MUTATION_RATE = MUTATION_RATE_DEFAULT;
     this.POP_MAX = POP_MAX_DEFAULT;
     this.STARTING_POP = STARTING_POP_DEFAULT;
@@ -67,6 +66,7 @@ public class FactoryPopulation {
     createStartingPopulation();
     double highestAffinity = 0;
     for (int currentGeneration = 0; currentGeneration < GENERATION_TARGET_AMOUNT; currentGeneration++) {
+      generateAffinityPool();
       reproduce();
     }
     for (int i = 0; i < affinityList.size(); i++) {
@@ -101,18 +101,20 @@ public class FactoryPopulation {
     
   }
 
-  private Factory[] selectFacortyMates() {
+  private void generateAffinityPool() {
     double affinityTotal = 0;
     for (int i = 0; i < affinityList.size(); i++) {
       affinityTotal += affinityList.get(i);
     }
 
-    List<Double> affinityPool = new ArrayList<>();
+    affinityPool = new ArrayList<>();
     for (int i = 0; i < affinityList.size(); i++) {
       for (int j = 0; j < (100 * (affinityList.get(i) / affinityTotal)); j++)
         affinityPool.add(affinityList.get(i));
     }
+  }
 
+  private Factory[] selectFacortyMates() {
     Random random = new Random();
     Factory[] factoriesToBreed = new Factory[2];
     factoriesToBreed[0] = factoryMap.get(affinityPool.get(random.nextInt(affinityPool.size())));
