@@ -76,10 +76,10 @@ public class Factory {
   public void mutate() {
     Random random = new Random();
     for (int mutation = 1; mutation <= 5; mutation++) {
-      int row = random.nextInt();
-      int col = random.nextInt();
-      int row2 = random.nextInt();
-      int col2 = random.nextInt();
+      int row = random.nextInt(factoryLayout.length);
+      int col = random.nextInt(factoryLayout[0].length);
+      int row2 = random.nextInt(factoryLayout.length);
+      int col2 = random.nextInt(factoryLayout[0].length);
       factoryLayout[row][col] = factoryLayout[row2][col2];
     }
   }
@@ -93,4 +93,38 @@ public class Factory {
       System.out.println();
     }
   }
+
+  public void copyTopLeftQuadrant(Factory parentFactory) {
+    for (int i = 0; i < factoryLayout.length / 2; i++) {
+      for (int j = 0; j < factoryLayout[0].length / 2; j++) {
+        factoryLayout[i][j] = parentFactory.getIndex(i, j);
+      }
+    }
+  }
+
+  public void copyTopRightQuadrant(Factory parentFactory) {
+    for (int i = 0; i < factoryLayout.length / 2; i++) {
+      for (int j = factoryLayout[0].length / 2; j < factoryLayout[0].length; j++) {
+        factoryLayout[i][j] = parentFactory.getIndex(i, j);
+      }
+    }
+  }
+
+  public void copyBottomLeftQuadrant(Factory parentFactory) {
+    for (int i = factoryLayout.length / 2; i < factoryLayout.length; i++) {
+      for (int j = 0; j < factoryLayout[0].length / 2; j++) {
+        factoryLayout[i][j] = parentFactory.getIndex(i, j);
+      }
+    }
+  }
+
+  public void copyBottomRightQuadrant(Factory parentFactory) {
+    for (int i = factoryLayout.length / 2; i < factoryLayout.length; i++) {
+      for (int j = factoryLayout[0].length / 2; j < factoryLayout[0].length; j++) {
+        factoryLayout[i][j] = parentFactory.getIndex(i, j);
+      }
+    }
+  }
+
+
 }

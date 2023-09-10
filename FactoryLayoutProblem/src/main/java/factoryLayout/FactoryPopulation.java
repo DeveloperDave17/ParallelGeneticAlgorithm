@@ -66,6 +66,9 @@ public class FactoryPopulation {
     generateStations();
     createStartingPopulation();
     double highestAffinity = 0;
+    for (int currentGeneration = 0; currentGeneration < GENERATION_TARGET_AMOUNT; currentGeneration++) {
+      reproduce();
+    }
     for (int i = 0; i < affinityList.size(); i++) {
       if (affinityList.get(i) > highestAffinity) highestAffinity = affinityList.get(i);
     }
@@ -98,7 +101,7 @@ public class FactoryPopulation {
     
   }
 
-  private Factory[] selection() {
+  private Factory[] selectFacortyMates() {
     double affinityTotal = 0;
     for (int i = 0; i < affinityList.size(); i++) {
       affinityTotal += affinityList.get(i);
@@ -115,6 +118,43 @@ public class FactoryPopulation {
     factoriesToBreed[0] = factoryMap.get(affinityPool.get(random.nextInt(affinityPool.size())));
     factoriesToBreed[1] = factoryMap.get(affinityPool.get(random.nextInt(affinityPool.size())));
     return factoriesToBreed;
+  }
+
+  private void reproduce() {
+    Factory[] factoryMates = selectFacortyMates();
+    double totalAffinity = factoryMates[0].getAffinity() + factoryMates[1].getAffinity();
+    Random random = new Random();
+    Factory babyFactory = new Factory(ROWSIZE, COLSIZE);
+
+    if (random.nextDouble() < (totalAffinity / factoryMates[0].getAffinity())) {
+      babyFactory.copyTopLeftQuadrant(factoryMates[0]);
+    } else {
+      babyFactory.copyTopLeftQuadrant(factoryMates[1]);
+    }
+
+    if (random.nextDouble() < (totalAffinity / factoryMates[0].getAffinity())) {
+      babyFactory.copyTopRightQuadrant(factoryMates[0]);
+    } else {
+      babyFactory.copyTopRightQuadrant(factoryMates[1]);
+    }
+
+    if (random.nextDouble() < (totalAffinity / factoryMates[0].getAffinity())) {
+      babyFactory.copyBottomLeftQuadrant(factoryMates[0]);
+    } else {
+      babyFactory.copyBottomLeftQuadrant(factoryMates[1]);
+    }
+
+    if (random.nextDouble() < (totalAffinity / factoryMates[0].getAffinity())) {
+      babyFactory.copyBottomRightQuadrant(factoryMates[0]);
+    } else {
+      babyFactory.copyBottomRightQuadrant(factoryMates[1]);
+    }
+
+    if (random.nextDouble() < MUTATION_RATE)
+      babyFactory.mutate();
+
+    factoryMap.put(babyFactory.getAffinity(), babyFactory);
+    affinityList.add(babyFactory.getAffinity());
   }
 
 }
