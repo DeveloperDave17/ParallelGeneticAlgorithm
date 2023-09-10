@@ -75,7 +75,7 @@ public class Factory {
 
   public void mutate() {
     Random random = new Random();
-    for (int mutation = 1; mutation <= 5; mutation++) {
+    for (int mutation = 1; mutation <= 15; mutation++) {
       int row = random.nextInt(factoryLayout.length);
       int col = random.nextInt(factoryLayout[0].length);
       int row2 = random.nextInt(factoryLayout.length);

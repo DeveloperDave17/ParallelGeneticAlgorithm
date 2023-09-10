@@ -1,17 +1,19 @@
 package factoryLayout;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class FactoryPopulation {
   // All factory layouts in this simulation are Rectanguler 
   private final int ROW_SIZE_DEFAULT = 8;
   private final int COL_SIZE_DEFAULT = 8;
 
-  private final int GENERATION_TARGET_AMOUNT_DEFAULT = 100;
+  private final int GENERATION_TARGET_AMOUNT_DEFAULT = 1000;
   private final double MUTATION_RATE_DEFAULT = 0.1;
 
   private final int POP_MAX_DEFAULT = 1000;
@@ -61,18 +63,22 @@ public class FactoryPopulation {
     this.NUM_STATIONS = NUM_STATIONS_DEFAULT;
   }
 
-  public void runSimulation() {
+  public void runSimulation() throws InterruptedException {
     generateStations();
     createStartingPopulation();
     double highestAffinity = 0;
     for (int currentGeneration = 0; currentGeneration < GENERATION_TARGET_AMOUNT; currentGeneration++) {
       generateAffinityPool();
-      reproduce();
-    }
-    for (int i = 0; i < affinityList.size(); i++) {
+      ExecutorService pool = Executors.newCachedThreadPool();
+      for (int currentTaskCount = 0; currentTaskCount < 64; currentTaskCount++)
+        pool.submit(() -> reproduce());
+      pool.shutdown();
+      boolean finished = pool.awaitTermination(10, TimeUnit.SECONDS);
+      for (int i = 0; i < affinityList.size(); i++) {
       if (affinityList.get(i) > highestAffinity) highestAffinity = affinityList.get(i);
+      }
+      System.out.println(highestAffinity);
     }
-    System.out.println(highestAffinity);
     factoryMap.get(highestAffinity).display();
   }
 
