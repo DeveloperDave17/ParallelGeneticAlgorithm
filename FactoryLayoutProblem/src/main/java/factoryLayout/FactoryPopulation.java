@@ -67,9 +67,9 @@ public class FactoryPopulation {
     createStartingPopulation();
     double highestAffinity = 0;
     for (int i = 0; i < affinityList.size(); i++) {
-      System.out.println(affinityList.get(i));
       if (affinityList.get(i) > highestAffinity) highestAffinity = affinityList.get(i);
     }
+    System.out.println(highestAffinity);
     factoryMap.get(highestAffinity).display();
   }
 
@@ -96,6 +96,25 @@ public class FactoryPopulation {
       affinityList.add(currenFactory.getAffinity());
     }
     
+  }
+
+  private Factory[] selection() {
+    double affinityTotal = 0;
+    for (int i = 0; i < affinityList.size(); i++) {
+      affinityTotal += affinityList.get(i);
+    }
+
+    List<Double> affinityPool = new ArrayList<>();
+    for (int i = 0; i < affinityList.size(); i++) {
+      for (int j = 0; j < (100 * (affinityList.get(i) / affinityTotal)); j++)
+        affinityPool.add(affinityList.get(i));
+    }
+
+    Random random = new Random();
+    Factory[] factoriesToBreed = new Factory[2];
+    factoriesToBreed[0] = factoryMap.get(affinityPool.get(random.nextInt(affinityPool.size())));
+    factoriesToBreed[1] = factoryMap.get(affinityPool.get(random.nextInt(affinityPool.size())));
+    return factoriesToBreed;
   }
 
 }
