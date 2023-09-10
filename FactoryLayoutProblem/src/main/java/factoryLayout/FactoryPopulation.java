@@ -88,7 +88,7 @@ public class FactoryPopulation {
       Random random = new Random();
       for (int i = 0; i < ROWSIZE; i++) {
         for (int j = 0; j < COLSIZE; j++) {
-          if (random.nextInt(101) <= 90) currenFactory.setIndex(i, j, stations[random.nextInt(NUM_STATIONS)]);
+          if (random.nextInt(100) < 90) currenFactory.setIndex(i, j, stations[random.nextInt(NUM_STATIONS)]);
           else currenFactory.createGap(i, j);
         }
       }
