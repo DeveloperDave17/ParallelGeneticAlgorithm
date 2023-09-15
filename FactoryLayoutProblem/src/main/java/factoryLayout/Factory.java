@@ -1,6 +1,6 @@
 package factoryLayout;
 
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Factory {
   
@@ -74,7 +74,7 @@ public class Factory {
   }
 
   public void mutate() {
-    Random random = new Random();
+    ThreadLocalRandom random = ThreadLocalRandom.current();
     for (int mutation = 1; mutation <= 15; mutation++) {
       int row = random.nextInt(factoryLayout.length);
       int col = random.nextInt(factoryLayout[0].length);

@@ -1,11 +1,14 @@
 package factoryLayout;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 public class FactoryPopulation {
@@ -39,7 +42,7 @@ public class FactoryPopulation {
 
   private Station[] stations;
 
-  private List<Double> affinityList = new ArrayList<>();
+  private List<Double> affinityList = Collections.synchronizedList(new ArrayList<>());
 
   private ConcurrentHashMap<Double,Factory> factoryMap = new ConcurrentHashMap<>();
 
@@ -73,11 +76,12 @@ public class FactoryPopulation {
       for (int currentTaskCount = 0; currentTaskCount < 64; currentTaskCount++)
         pool.submit(() -> reproduce());
       pool.shutdown();
-      boolean finished = pool.awaitTermination(10, TimeUnit.SECONDS);
+      pool.awaitTermination(10, TimeUnit.SECONDS);
       for (int i = 0; i < affinityList.size(); i++) {
       if (affinityList.get(i) > highestAffinity) highestAffinity = affinityList.get(i);
       }
       System.out.println(highestAffinity);
+      removePopulationSurplus();
     }
     factoryMap.get(highestAffinity).display();
   }
@@ -107,6 +111,14 @@ public class FactoryPopulation {
     
   }
 
+  private void removePopulationSurplus() {
+    PriorityQueue<Double> affinityPriorities = new PriorityQueue<>(affinityList);
+    int populationSurplus = affinityList.size() - POP_MAX;
+    for (int i = 0; i < populationSurplus; i++) {
+      affinityList.remove(affinityPriorities.poll());
+    }
+  }
+
   private void generateAffinityPool() {
     double affinityTotal = 0;
     for (int i = 0; i < affinityList.size(); i++) {
@@ -115,7 +127,7 @@ public class FactoryPopulation {
 
     affinityPool = new ArrayList<>();
     for (int i = 0; i < affinityList.size(); i++) {
-      for (int j = 0; j < (100 * (affinityList.get(i) / affinityTotal)); j++)
+      for (int j = 0; j < (affinityList.size() * (affinityList.get(i) / affinityTotal)); j++)
         affinityPool.add(affinityList.get(i));
     }
   }
@@ -131,7 +143,7 @@ public class FactoryPopulation {
   private void reproduce() {
     Factory[] factoryMates = selectFacortyMates();
     double totalAffinity = factoryMates[0].getAffinity() + factoryMates[1].getAffinity();
-    Random random = new Random();
+    ThreadLocalRandom random = ThreadLocalRandom.current();
     Factory babyFactory = new Factory(ROWSIZE, COLSIZE);
 
     if (random.nextDouble() < (totalAffinity / factoryMates[0].getAffinity())) {
