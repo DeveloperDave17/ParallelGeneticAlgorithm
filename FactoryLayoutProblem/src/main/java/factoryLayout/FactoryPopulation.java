@@ -13,10 +13,10 @@ import java.util.concurrent.TimeUnit;
 
 public class FactoryPopulation {
   // All factory layouts in this simulation are Rectanguler 
-  private final int ROW_SIZE_DEFAULT = 8;
-  private final int COL_SIZE_DEFAULT = 8;
+  private final int ROW_SIZE_DEFAULT = 16;
+  private final int COL_SIZE_DEFAULT = 16;
 
-  private final int GENERATION_TARGET_AMOUNT_DEFAULT = 1000;
+  private final int GENERATION_TARGET_AMOUNT_DEFAULT = 5000;
   private final double MUTATION_RATE_DEFAULT = 0.1;
 
   private final int POP_MAX_DEFAULT = 1000;
@@ -46,6 +46,8 @@ public class FactoryPopulation {
 
   private ConcurrentHashMap<Double,Factory> factoryMap = new ConcurrentHashMap<>();
 
+  double highestAffinity;
+
   public FactoryPopulation(int rowSize, int colSize, int generationTargetAmount, double mutationRate, int popMax, int startingPop, int numStations) {
     this.ROWSIZE = rowSize;
     this.COLSIZE = colSize;
@@ -69,7 +71,20 @@ public class FactoryPopulation {
   public void runSimulation() throws InterruptedException {
     generateStations();
     createStartingPopulation();
-    double highestAffinity = 0;
+    highestAffinity = 0;
+    for (int i = 0; i < affinityList.size(); i++) {
+      if (affinityList.get(i) > highestAffinity) highestAffinity = affinityList.get(i);
+    }
+    FactoryView factoryView = new FactoryView(COLSIZE, ROWSIZE);
+    factoryView.displayStations(getHighestAfinityFactory());
+    factoryView.display();
+    ExecutorService displayExecutor = Executors.newFixedThreadPool(1);
+    displayExecutor.submit(() -> {
+      while(true) {
+        Thread.sleep(500);
+        factoryView.displayStations(getHighestAfinityFactory());
+      }
+    });
     for (int currentGeneration = 0; currentGeneration < GENERATION_TARGET_AMOUNT; currentGeneration++) {
       generateAffinityPool();
       ExecutorService pool = Executors.newCachedThreadPool();
@@ -78,12 +93,10 @@ public class FactoryPopulation {
       pool.shutdown();
       pool.awaitTermination(10, TimeUnit.SECONDS);
       for (int i = 0; i < affinityList.size(); i++) {
-      if (affinityList.get(i) > highestAffinity) highestAffinity = affinityList.get(i);
+        if (affinityList.get(i) > highestAffinity) highestAffinity = affinityList.get(i);
       }
-      System.out.println(highestAffinity);
       removePopulationSurplus();
     }
-    factoryMap.get(highestAffinity).display();
   }
 
   private void generateStations() {
@@ -175,6 +188,10 @@ public class FactoryPopulation {
 
     factoryMap.put(babyFactory.getAffinity(), babyFactory);
     affinityList.add(babyFactory.getAffinity());
+  }
+
+  public Factory getHighestAfinityFactory() {
+    return factoryMap.get(highestAffinity);
   }
 
 }

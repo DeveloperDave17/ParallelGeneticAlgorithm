@@ -57,7 +57,7 @@ public class Factory {
         Station currentStation = factoryLayout[currentRow][currentCol];
         if (currentStation != null) {
           for (int targetRow = 0; targetRow < factoryLayout.length; targetRow++) {
-            for (int targetCol = 0; targetCol < factoryLayout.length; targetCol++) {
+            for (int targetCol = 0; targetCol < factoryLayout[0].length; targetCol++) {
               if ((currentRow != targetRow || currentCol != targetCol) && factoryLayout[targetRow][targetCol] != null) affinity += calcAffinity(currentStation, factoryLayout[targetRow][targetCol], currentRow, currentCol, targetRow, targetCol);
             }
           }
