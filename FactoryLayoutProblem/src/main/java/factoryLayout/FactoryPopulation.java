@@ -23,7 +23,7 @@ public class FactoryPopulation {
 
   private final int STARTING_POP_DEFAULT = 200;
   
-  private final int NUM_STATIONS_DEFAULT = 2;
+  private final int NUM_STATIONS_DEFAULT = 4;
 
 
   private final int ROWSIZE;
@@ -47,6 +47,8 @@ public class FactoryPopulation {
   private ConcurrentHashMap<Double,Factory> factoryMap = new ConcurrentHashMap<>();
 
   double highestAffinity;
+
+  boolean simulationStillGoing;
 
   public FactoryPopulation(int rowSize, int colSize, int generationTargetAmount, double mutationRate, int popMax, int startingPop, int numStations) {
     this.ROWSIZE = rowSize;
@@ -72,6 +74,7 @@ public class FactoryPopulation {
     generateStations();
     createStartingPopulation();
     highestAffinity = 0;
+    simulationStillGoing = true;
     for (int i = 0; i < affinityList.size(); i++) {
       if (affinityList.get(i) > highestAffinity) highestAffinity = affinityList.get(i);
     }
@@ -80,8 +83,12 @@ public class FactoryPopulation {
     factoryView.display();
     ExecutorService displayExecutor = Executors.newFixedThreadPool(1);
     displayExecutor.submit(() -> {
-      while(true) {
-        Thread.sleep(500);
+      while(getSimulationStillGoing()) {
+        try {
+          Thread.sleep(500);
+        } catch(Exception e) {
+          e.printStackTrace();
+        }
         factoryView.displayStations(getHighestAfinityFactory());
       }
     });
@@ -97,6 +104,8 @@ public class FactoryPopulation {
       }
       removePopulationSurplus();
     }
+    System.out.println("Simulation Is Over");
+    simulationStillGoing = false;
   }
 
   private void generateStations() {
@@ -192,6 +201,10 @@ public class FactoryPopulation {
 
   public Factory getHighestAfinityFactory() {
     return factoryMap.get(highestAffinity);
+  }
+
+  public boolean getSimulationStillGoing() {
+    return simulationStillGoing;
   }
 
 }
