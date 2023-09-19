@@ -16,14 +16,14 @@ public class FactoryPopulation {
   private final int ROW_SIZE_DEFAULT = 16;
   private final int COL_SIZE_DEFAULT = 16;
 
-  private final int GENERATION_TARGET_AMOUNT_DEFAULT = 5000;
-  private final double MUTATION_RATE_DEFAULT = 0.1;
+  private final int GENERATION_TARGET_AMOUNT_DEFAULT = 20000;
+  private final double MUTATION_RATE_DEFAULT = 0.2;
 
   private final int POP_MAX_DEFAULT = 1000;
 
   private final int STARTING_POP_DEFAULT = 200;
   
-  private final int NUM_STATIONS_DEFAULT = 4;
+  private final int NUM_STATIONS_DEFAULT = 2;
 
 
   private final int ROWSIZE;
@@ -119,7 +119,7 @@ public class FactoryPopulation {
 
   private void createStartingPopulation() {
     for (int factoryNum = 0; factoryNum < STARTING_POP; factoryNum++) {
-      Factory currenFactory = new Factory(ROWSIZE, COLSIZE);
+      Factory currenFactory = new Factory(ROWSIZE, COLSIZE, stations);
       Random random = new Random();
       for (int i = 0; i < ROWSIZE; i++) {
         for (int j = 0; j < COLSIZE; j++) {
@@ -166,7 +166,7 @@ public class FactoryPopulation {
     Factory[] factoryMates = selectFacortyMates();
     double totalAffinity = factoryMates[0].getAffinity() + factoryMates[1].getAffinity();
     ThreadLocalRandom random = ThreadLocalRandom.current();
-    Factory babyFactory = new Factory(ROWSIZE, COLSIZE);
+    Factory babyFactory = new Factory(ROWSIZE, COLSIZE, stations);
 
     if (random.nextDouble() < (totalAffinity / factoryMates[0].getAffinity())) {
       babyFactory.copyTopLeftQuadrant(factoryMates[0]);
