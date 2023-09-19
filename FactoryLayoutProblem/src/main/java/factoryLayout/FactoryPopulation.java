@@ -23,7 +23,7 @@ public class FactoryPopulation {
 
   private final int STARTING_POP_DEFAULT = 200;
   
-  private final int NUM_STATIONS_DEFAULT = 2;
+  private final int NUM_STATIONS_DEFAULT = 4;
 
 
   private final int ROWSIZE;
@@ -46,7 +46,7 @@ public class FactoryPopulation {
 
   private ConcurrentHashMap<Double,Factory> factoryMap = new ConcurrentHashMap<>();
 
-  double highestAffinity;
+  volatile double highestAffinity;
 
   boolean simulationStillGoing;
 
@@ -86,9 +86,7 @@ public class FactoryPopulation {
       while(getSimulationStillGoing()) {
         try {
           Thread.sleep(500);
-        } catch(Exception e) {
-          e.printStackTrace();
-        }
+        } catch(Exception e) {}
         factoryView.displayStations(getHighestAfinityFactory());
       }
     });
