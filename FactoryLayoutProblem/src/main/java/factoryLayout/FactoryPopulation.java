@@ -44,12 +44,19 @@ public class FactoryPopulation {
 
   private List<Double> affinityList = Collections.synchronizedList(new ArrayList<>());
 
+  // A list that holds the result of new affinity generation, using this avoids a race condition
+  // for the reproduction function.
+  private List<Double> affinityResults;
+
   private ConcurrentHashMap<Double,Factory> factoryMap = new ConcurrentHashMap<>();
 
   volatile double highestAffinity;
 
   boolean simulationStillGoing;
 
+  /**
+   * Allows for the customization of the genetic algorithm presets.
+   */
   public FactoryPopulation(int rowSize, int colSize, int generationTargetAmount, double mutationRate, int popMax, int startingPop, int numStations) {
     this.ROWSIZE = rowSize;
     this.COLSIZE = colSize;
@@ -60,6 +67,9 @@ public class FactoryPopulation {
     this.NUM_STATIONS = numStations;
   }
 
+  /**
+   * A constructor which uses all of the setup presets for the genetic algorithm
+   */
   public FactoryPopulation() {
     this.ROWSIZE = ROW_SIZE_DEFAULT;
     this.COLSIZE = COL_SIZE_DEFAULT;
@@ -70,6 +80,21 @@ public class FactoryPopulation {
     this.NUM_STATIONS = NUM_STATIONS_DEFAULT;
   }
 
+  /**
+   * This methods runs the entire algorithm. First, it calls generateStations in order to generate random
+   * stations based on the preset. Next, it generates a starting population that is STARTING_POP in size.
+   * Then highest afinity and simulationStillGoing are initialized. Simulation still going is a value that
+   * lets the display now when to stop updating. The highest afinity value from the starting population is then
+   * gathered to be displayed before the generation cycle begins. Once the first factory is displayed a thread
+   * is created to display updates every half a second to the user. 
+   * 
+   * For the generation cycle, an immutable pool is generated at the beginning of each cycle. After
+   * the pool is generated, the synchronous result list is setup to store the result of each threads reproduction.
+   * Once each thread reproduces the pool stops the main program from waiting. The results of the reproduction for each thread
+   * are added to the overall pool. Next, a new highest affinity is selected. Finally the excess population is removed.
+   * This cycle repeats until GENERATION_TARGET_AMOUNT loops have occurred.
+   * @throws InterruptedException
+   */
   public void runSimulation() throws InterruptedException {
     generateStations();
     createStartingPopulation();
@@ -92,11 +117,13 @@ public class FactoryPopulation {
     });
     for (int currentGeneration = 0; currentGeneration < GENERATION_TARGET_AMOUNT; currentGeneration++) {
       generateAffinityPool();
+      affinityResults = Collections.synchronizedList(new ArrayList<>());
       ExecutorService pool = Executors.newCachedThreadPool();
       for (int currentTaskCount = 0; currentTaskCount < 64; currentTaskCount++)
         pool.submit(() -> reproduce());
       pool.shutdown();
       pool.awaitTermination(10, TimeUnit.SECONDS);
+      affinityList.addAll(affinityResults);
       for (int i = 0; i < affinityList.size(); i++) {
         if (affinityList.get(i) > highestAffinity) highestAffinity = affinityList.get(i);
       }
@@ -106,6 +133,9 @@ public class FactoryPopulation {
     simulationStillGoing = false;
   }
 
+  /**
+   * Generates NUM_STATIONS with random R G B values ranging from 0 to 255.
+   */
   private void generateStations() {
     Random rand = new Random();
     int RBGUpperLim = 256;
@@ -115,6 +145,9 @@ public class FactoryPopulation {
     }
   }
 
+  /**
+   * Creates STARTING_POP many factories with random station/gap layouts.
+   */
   private void createStartingPopulation() {
     for (int factoryNum = 0; factoryNum < STARTING_POP; factoryNum++) {
       Factory currenFactory = new Factory(ROWSIZE, COLSIZE, stations);
@@ -131,6 +164,9 @@ public class FactoryPopulation {
     
   }
 
+  /**
+   * Removes any population surplus past the POP_MAX amount
+   */
   private void removePopulationSurplus() {
     PriorityQueue<Double> affinityPriorities = new PriorityQueue<>(affinityList);
     int populationSurplus = affinityList.size() - POP_MAX;
@@ -139,6 +175,9 @@ public class FactoryPopulation {
     }
   }
 
+  /**
+   * Creates an affinity pool that is treated as immutable after this method.
+   */
   private void generateAffinityPool() {
     double affinityTotal = 0;
     for (int i = 0; i < affinityList.size(); i++) {
@@ -152,14 +191,24 @@ public class FactoryPopulation {
     }
   }
 
+  /**
+   * Selects two random factories from the pool to be bred.
+   * @return an array containing two factories that were selected to reproduce
+   */
   private Factory[] selectFacortyMates() {
-    Random random = new Random();
+    ThreadLocalRandom random = ThreadLocalRandom.current();
     Factory[] factoriesToBreed = new Factory[2];
     factoriesToBreed[0] = factoryMap.get(affinityPool.get(random.nextInt(affinityPool.size())));
     factoriesToBreed[1] = factoryMap.get(affinityPool.get(random.nextInt(affinityPool.size())));
     return factoriesToBreed;
   }
 
+  /**
+   * Gets two factories to reproduce, determines the total afinity of the factories together.
+   * Uses their total affinity to probablistically decide which factories quadrant (1 of 4 corners)
+   * will be passed down, occurs for all 4 quadrants. There is then a MUTATION_RATE chance that the
+   * offspring of the factories mutates. Results are added to the factoryMap and affinityResults.
+   */
   private void reproduce() {
     Factory[] factoryMates = selectFacortyMates();
     double totalAffinity = factoryMates[0].getAffinity() + factoryMates[1].getAffinity();
@@ -194,7 +243,7 @@ public class FactoryPopulation {
       babyFactory.mutate();
 
     factoryMap.put(babyFactory.getAffinity(), babyFactory);
-    affinityList.add(babyFactory.getAffinity());
+    affinityResults.add(babyFactory.getAffinity());
   }
 
   public Factory getHighestAfinityFactory() {
