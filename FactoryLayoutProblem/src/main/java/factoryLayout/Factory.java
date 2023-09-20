@@ -7,6 +7,7 @@ public class Factory {
   private Station[][] factoryLayout;
   private double affinity;
   private Station[] possibleStations;
+  private double stationOverCapacityPenalty = -100;
 
   public Factory(int rowSize, int colSize, Station[] possibleStations) {
     factoryLayout = new Station[rowSize][colSize];
@@ -78,7 +79,7 @@ public class Factory {
       if (stationCounters[i] > ((factoryLayout.length * factoryLayout[0].length) * (1.0 / stationCounters.length))) {
         double tooManyStation = stationCounters[i] - ((factoryLayout.length * factoryLayout[0].length) * (1.0 / stationCounters.length));
         for (int stationCount = 0; stationCount < tooManyStation; stationCount++) {
-          affinity += -100;
+          affinity += stationOverCapacityPenalty;
         }
       }
     }
